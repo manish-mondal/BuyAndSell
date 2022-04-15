@@ -43,7 +43,7 @@ class Item(db.Model):
     name = db.Column(db.String(length=30), nullable=False, unique=True)
     price = db.Column(db.Integer(), nullable=False)
     barcode = db.Column(db.String(length=12), nullable=False, unique=True)
-    description = db.Column(db.String(length=1024), nullable=False, unique=True)
+    description = db.Column(db.String(length=1024), nullable=False)
     owner = db.Column(db.Integer(), db.ForeignKey('user.id'))
     def __repr__(self):
         return f'Item {self.name}'
@@ -57,3 +57,26 @@ class Item(db.Model):
         self.owner = None
         user.budget += self.price
         db.session.commit()
+
+
+
+class Request(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    
+    item_id = db.Column(db.Integer(), db.ForeignKey('item.id'))
+    buyer_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    seller_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    
+    approve = db.Column(db.String())                    
+    status= db.Column(db.String())               
+
+
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    item_id = db.Column(db.Integer(), db.ForeignKey('item.id'))
+    buyer_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    seller_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    
+    
+

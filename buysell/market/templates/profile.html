@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}
+Profile Page
+{% endblock %}
+{% block content %}
+
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-8">
+       <h2>Your Transactions</h2>
+       <p>Items bought</p>
+       <br>
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+               <!-- Your Columns HERE -->
+               <th scope="col">TRANSACTION_ID</th>
+               <th scope="col">ITEM ID</th>
+               <th scope="col">SELLER ID</th>
+            </tr>
+         </thead>
+         <tbody>
+            <!-- Your rows inside the table HERE: -->
+            {% for item in bought_items %}
+            <tr>
+               <td>{{ item.id }}</td>
+               <td>{{ item.item_id }}</td>
+               <td>{{ item.seller_id }}</td>
+               
+            </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+
+      
+       <p>Items sold</p>
+       <br>
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+               <!-- Your Columns HERE -->
+               <th scope="col">TRANSACTION_ID</th>
+               <th scope="col">ITEM ID</th>
+               <th scope="col">BUYER ID</th>
+            </tr>
+         </thead>
+         <tbody>
+            <!-- Your rows inside the table HERE: -->
+            {% for item in sold_items %}
+            <tr>
+               <td>{{ item.id }}</td>
+               <td>{{ item.item_id }}</td>
+               <td>{{ item.buyer_id }}</td>
+            </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+
+
+
+
+   </div>
+{% endblock %}

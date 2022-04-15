@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}
+Requests Page
+{% endblock %}
+{% block content %}
+
+<div class="row" style="margin-top:20px; margin-left:20px">
+   <div class="col-8">
+       <h2>Available Requests on the Market</h2>
+       <p>You can Approve any of the requests</p>
+       <br>
+      <table class="table table-hover table-dark">
+         <thead>
+            <tr>
+               <!-- Your Columns HERE -->
+               <th scope="col">Req ID</th>
+               <th scope="col">Item ID</th>
+               <th scope="col">Buyer ID</th>
+               <th scope="col">Approve</th>
+            </tr>
+         </thead>
+         <tbody>
+            <!-- Your rows inside the table HERE: -->
+            {% for req in requests %}
+            {% include 'includes/request_modals.html' %}
+            <tr>
+               <td>{{ req.id }}</td>
+               <td>{{ req.item_id }}</td>
+               <td>{{ req.buyer_id }}</td>
+               <td>
+                  
+                  <button class="btn btn-outline btn-success" data-toggle="modal" data-target="#Modal-PurchaseConfirm-{{ req.id }}">Approve this request</button>
+               </td>
+            </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+   </div>
+{% endblock %}
