@@ -15,13 +15,6 @@ class User(db.Model, UserMixin):
     items = db.relationship('Item', backref='owned_user', lazy=True)
 
     @property
-    def prettier_budget(self):
-        if len(str(self.budget)) >= 4:
-            return f'{str(self.budget)[:-3]},{str(self.budget)[-3:]}$'
-        else:
-            return f"{self.budget}$"
-
-    @property
     def password(self):
         return self.password
 
@@ -31,9 +24,6 @@ class User(db.Model, UserMixin):
 
     def check_password_correction(self, attempted_password):
         return bcrypt.check_password_hash(self.password_hash, attempted_password)
-
-    def can_purchase(self, item_obj):
-        return self.budget >= item_obj.price
 
     def can_sell(self, item_obj):
         return item_obj in self.items
