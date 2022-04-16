@@ -6,7 +6,7 @@ db.create_all()
 
 from market.models import User,Item,Request,Transaction
 
-u1 = User(username='seller1',password_hash='$2b$12$PtHJui729T/mqYP3FqZmH.BS1OGhmuSGNi3fDSroxQ92yISB92z72',email_address='s1@s1.com')
+u1 = User(username='seller1',password_hash='$2b$12$PtHJui729T/mqYP3FqZmH.BS1OGhmuSGNi3fDSroxQ92yISB92z72',email_address='riky.manish@outlook.com')
 db.session.add(u1)
 
 

@@ -6,8 +6,10 @@ Sell Page
 
 <div class="row" style="margin-top:20px; margin-left:20px">
    <div class="col-4">
-        <h2>Owned Items</h2>
-        <p>Click on sell item to put an item back on the Market</p>
+    <a class="btn btn-sm btn-secondary" href="{{ url_for('sell_items') }}">Sell a new item</a>    
+    <p> </p>
+    <h2>Owned Items</h2>
+
         <br>
         <div class="row">
            {% for owned_item in owned_items %}
@@ -15,11 +17,12 @@ Sell Page
              <div class="col-md-6">
                  <div style="margin-bottom: 5px" class="card text-center bg-dark">
                       <div class="card-body">
-                          <h5 class="card-title">{{ owned_item.name }}</h5>
-                          <button type="button" class="btn btn-outline-danger" style="margin-bottom: 5px"
+                        <h5 class="card-title">{{ owned_item.name }}</h5>
+                          <h5 class="card-title">{{ owned_item.description }}</h5>
+                          <!--<button type="button" class="btn btn-outline-danger" style="margin-bottom: 5px"
                                   data-toggle="modal" data-target="#Modal-SellingConfirm-{{ owned_item.id }}">
                               Sell this Item
-                          </button>
+                          </button>-->
                           <p class="card-text"><strong>
                               This item costs {{ owned_item.price }}$
                           </strong></p>

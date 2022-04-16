@@ -10,23 +10,18 @@
             {{ form.hidden_tag() }}
             <img class="mb-4" src="https://res.cloudinary.com/jimshapedcoding/image/upload/v1597332609/android-icon-192x192_ove2a7.png" alt="">
             <h1 class="h3 mb-3 font-weight-normal">
-                Please Login
+                Sell your item 
             </h1>
             <br>
-            {{ form.username.label() }}
-            {{ form.username(class="form-control", placeholder="User Name") }}
-
-            {{ form.password.label() }}
-            {{ form.password(class="form-control", placeholder="Password") }}
-
+            {{ form.name.label() }}
+            {{ form.name(class="form-control", placeholder="Name") }}
+            {{ form.price.label() }}
+            {{ form.price(class="form-control", placeholder="Price") }}
+            {{ form.description.label() }}
+            {{ form.description(class="form-control", placeholder="Description") }}
             <br>
 
 
-            <div class="checkbox mb-3">
-               <h6>Do not have an account?</h6>
-               <a class="btn btn-sm btn-secondary" href="{{ url_for('register_page') }}">Register</a>
-               
-            </div>
 
             {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
 
