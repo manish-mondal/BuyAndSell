@@ -1,10 +1,13 @@
 
-from market import app
+from turtle import title
+from market import app,mail
 from flask import render_template, redirect, url_for, flash, request
 from market.models import Item, User,Request,Transaction
-from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm
+from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm,ResetRequestForm,ChangePasswordForm,SellerItemForm
 from market import db
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_mail import Message
+from market import bcrypt
 
 
 @app.route('/',methods=['GET', 'POST'])
@@ -149,10 +152,67 @@ def requests_page():
         # owned_items = Item.query.filter_by(owner=current_user.id)
         return render_template('request.html', requests=requests, request_form=request_form)
 
+def send_email(user):
+    token = User.get_token(user)
+    msg = Message('Password Reset Request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
+    msg.body =f'''
+    To Reset Password folllow the link.
+    
+     {url_for('reset_token',token=token,_external=True)}
+   
+
+    If you did not send a reset password request, please ignore this message.
 
 
 
 
+    '''
+
+    mail.send(msg)
+
+@app.route('/reset_password',methods=['GET', 'POST'])
+def reset_request():
+    form = ResetRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email_address=form.email_address.data).first()
+        if user:
+            send_email(user)
+            flash('Reset request sent. Please check your email','success')
+            return render_template('reset_request.html', title = 'Reset Request',form = form)
+
+        else:
+            flash('user not there','failed')
+
+    return render_template('reset_request.html',title='Reset Request',form= form)
+
+@app.route('/reset_password/<token>',methods=['GET', 'POST'])
+def reset_token(token):
+    user = User.varify_token(token)
+    if user is None:
+        flash('That token is invalid. Please Try again!','warning')
+        return redirect(url_for('reset_request'))
+
+    form=ChangePasswordForm()
+    if form.validate_on_submit():
+        # user.password= bcrypt.generate_password_hash(form.password1.data).decode('utf-8')
+        user.password =  form.password1.data
+        db.session.commit()
+        flash('Password Changed! Please Login.')
+        return redirect(url_for('login_page'))
+    return render_template('change_password.html',form = form)
+
+@app.route('/sell_items', methods=['GET', 'POST'])
+def sell_items():
+    form = SellerItemForm()
+    if form.validate_on_submit():
+        item_to_create =  Item(name=form.name.data, barcode = 'check',
+        price=form.price.data,description=form.description.data,owner= current_user.id)
+        db.session.add(item_to_create)
+        db.session.commit()
+
+        flash(f'Success! Your item is now in marketplace: {form.name.data}', category='success')
+        return redirect(url_for('sell_page'))
+    
 
 
-
+    return render_template('sell_items.html', form=form)

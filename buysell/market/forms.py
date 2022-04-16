@@ -1,3 +1,5 @@
+from traceback import print_exc
+from unicodedata import name
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField
 from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
@@ -33,5 +35,21 @@ class PurchaseItemForm(FlaskForm):
 class SellItemForm(FlaskForm):
     submit = SubmitField(label='Sell Item!')
 
+class SellerItemForm(FlaskForm):
+    name = StringField(label='Item Name:', validators=[Length(min=2, max=30), DataRequired()])
+    price = StringField(label='Item Price:', validators=[Length(min=2, max=30), DataRequired()])
+    description = StringField(label='Item Description:', validators=[Length(min=2, max=150), DataRequired()])
+    submit = SubmitField(label='Sell Item!')
+
 class RequestForm(FlaskForm):
     submit = SubmitField(label='OK')
+
+class ResetRequestForm(FlaskForm):
+    email_address = StringField(label='Email Address:', validators=[Email(), DataRequired()])
+    submit = SubmitField(label='Reset Password', validators=[DataRequired()])
+
+class ChangePasswordForm(FlaskForm):
+    password1 = PasswordField(label='Password:', validators=[Length(min=6), DataRequired()])
+    password2 = PasswordField(label='Confirm Password:', validators=[EqualTo('password1'), DataRequired()])
+    submit = SubmitField(label='Change Password', validators=[DataRequired()])
+

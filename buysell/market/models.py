@@ -1,7 +1,10 @@
+from itsdangerous import Serializer 
 from market import db, login_manager
 from market import bcrypt
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
+from flask import Flask
 
+app = Flask(__name__)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -38,6 +41,21 @@ class User(db.Model, UserMixin):
     def can_sell(self, item_obj):
         return item_obj in self.items
 
+    def get_token(self):
+        serial = Serializer('ec9439cfc6c796ae2029594d')
+        return serial.dumps({'user_id' :self.id})
+
+    @staticmethod
+    def varify_token(token):
+        serial = Serializer('ec9439cfc6c796ae2029594d')
+       
+        try:
+            user_id = serial.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
+
 class Item(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(length=30), nullable=False, unique=True)
@@ -54,8 +72,8 @@ class Item(db.Model):
         db.session.commit()
 
     def sell(self, user):
-        self.owner = None
-        user.budget += self.price
+        self.owner = user.id
+        # user.budget += self.price
         db.session.commit()
 
 
