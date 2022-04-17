@@ -54,3 +54,10 @@ class ChangePasswordForm(FlaskForm):
     password2 = PasswordField(label='Confirm Password:', validators=[EqualTo('password1'), DataRequired()])
     submit = SubmitField(label='Change Password', validators=[DataRequired()])
 
+class LoginAuthCodeForm(FlaskForm):
+    auth_code = StringField(label='Google Authentication Code:')
+    submit = SubmitField(label='Verify')
+
+class ForgetUserNameForm(FlaskForm):
+    email_address = StringField(label='Email Address:', validators=[Email(), DataRequired()])
+    submit = SubmitField(label='Send email')
