@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}
+    Register Page
+{% endblock %}
+
+{% block content %}
+<body class="text-center" onload="generateQrCode()">
+    <div class="container">
+       <p> Please Scan this QR code in Google Authenticator App.</p>
+        <p>To download this App : <a href= "https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">Click Here</a></p>
+        <div>
+            <img id="qrcode" />
+        </div>
+    </div>
+    <div class="container">
+        <form method="POST" class="form-signin" style="color:white">
+          <br>
+            {{ form.auth_code.label() }}
+            {{ form.auth_code(class="form-control", placeholder="Code") }}
+
+            <br>
+
+            </div>
+
+            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+
+        </form>
+    </div>
+</body>
+<script>
+    function generateQrCode()
+    {
+        fetch('http://127.0.0.1:5000/qr_generation_registration').then((res)=>
+            res.body.getReader().read().then(
+            (img)=>{
+                        let imageData= img.value;
+                        let stringValue = String.fromCharCode(...imageData);
+                        let encodevalue = btoa(stringValue);
+                        document.getElementById('qrcode').src = `data:image/png;base64,${encodevalue}`;
+
+
+                    }
+
+
+            )
+        
+        
+        )
+    }
+
+</script>
+{% endblock %}

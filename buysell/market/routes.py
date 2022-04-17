@@ -1,14 +1,23 @@
-
+from io import BytesIO
+from re import T
+from tkinter import N
 from turtle import title
+from urllib import response
+
+from sqlalchemy import true
 from market import app,mail
-from flask import render_template, redirect, url_for, flash, request
-from market.models import Item, User,Request
-from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm,ResetRequestForm,ChangePasswordForm,SellerItemForm
+
+from flask import render_template, redirect, send_file, session, url_for, flash, request
+from market.models import Item, User,Request,Auth
+from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm,ResetRequestForm,ChangePasswordForm,SellerItemForm,LoginAuthCodeForm,ForgetUserNameForm
+
 from market import db
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from market import bcrypt
-
+import qrcode
+import pyotp
+import json
 
 @app.route('/',methods=['GET', 'POST'])
 @app.route('/home',methods=['GET', 'POST'])
@@ -19,9 +28,12 @@ def home_page():
         if attempted_user and attempted_user.check_password_correction(
                 attempted_password=form.password.data
         ):
-            login_user(attempted_user)
-            flash(f'Success! You are logged in as: {attempted_user.username}', category='success')
-            return redirect(url_for('market_page'))
+            # login_user(attempted_user)
+            # flash(f'Success! You are logged in as: {attempted_user.username}', category='success')
+            # return redirect(url_for('market_page'))
+            session["message"] = json.dumps(attempted_user.id)
+            flash('Please enter Authentication Code to enjoy Buy And Sell Marketplace!', category='success')
+            return redirect(url_for('qr_logincode'))
         else:
             flash('Username and password are not match! Please try again', category='danger')
     
@@ -34,7 +46,6 @@ def market_page():
     if request.method == "POST":
         #Purchase Item Logic
         purchased_item = request.form.get('purchased_item')
-        
         p_item_object = Item.query.filter_by(id=purchased_item).first()
 
         existing_req = Request.query.filter(Request.item_id==purchased_item,Request.buyer_id==current_user.id).first()
@@ -45,6 +56,8 @@ def market_page():
                                     buyer_name=current_user.username,seller_id=p_item_object.owner,status=0)
             db.session.add(req_to_create)
             db.session.commit()
+            user_Details = User.query.filter_by(id=p_item_object.owner).first()
+            send_email_buy_request(user_Details,current_user,p_item_object)
             flash(f"You purchase request of {p_item_object.name} for {p_item_object.price}$ is sent\
                 is sent to the Seller. You will see the item in your Profile once approved." , category='success')
         else:
@@ -74,8 +87,11 @@ def register_page():
         db.session.add(user_to_create)
         db.session.commit()
         login_user(user_to_create)
-        flash(f"Account created successfully! You are now logged in as {user_to_create.username}", category='success')
-        return redirect(url_for('market_page'))
+        # flash(f"Account created successfully! You are now logged in as {user_to_create.username}", category='success')
+        session['userid'] = json.dumps(user_to_create.id)
+
+        # return redirect(url_for('market_page'))
+        return redirect(url_for('qr_registrationcode'))
     if form.errors != {}: #If there are not errors from the validations
         for err_msg in form.errors.values():
             flash(f'There was an error with creating a user: {err_msg}', category='danger')
@@ -112,7 +128,6 @@ def sell_page():
 
         owned_items = Item.query.filter(Item.id.not_in(ll),Item.owner==current_user.id)
         return render_template('sell.html', owned_items=owned_items, selling_form=selling_form)
-
 
 @app.route('/sell_items', methods=['GET', 'POST'])
 def sell_items():
@@ -157,6 +172,7 @@ def requests_page():
         return render_template('request.html', requests=requests, request_form=request_form)
 
 def send_email(user):
+    
     token = User.get_token(user)
     msg = Message('Password Reset Request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
     msg.body =f'''
@@ -174,6 +190,29 @@ def send_email(user):
 
     mail.send(msg)
 
+# Email on the basis of the request to puchase item
+def send_email_buy_request(user,buyer,p_item_object):
+    
+    msg = Message(f'Buy Request on item{p_item_object.name}', recipients=[user.email_address],sender='streetanderson683@gmail.com')
+    msg.body =f'''Hi {user.username},
+    
+    
+    {buyer.username} has requested to buy item {p_item_object.name} with price {p_item_object.price}$.
+   
+    
+    If you interested to sell {p_item_object.name} to {buyer.username}, please email back to {buyer.username}.
+
+    {buyer.username}'s email-id is {buyer.email_address}.
+
+    From,
+    Buy And Sell
+
+
+    '''
+
+    mail.send(msg)
+
+
 @app.route('/reset_password',methods=['GET', 'POST'])
 def reset_request():
     form = ResetRequestForm()
@@ -182,8 +221,8 @@ def reset_request():
         if user:
             send_email(user)
             flash('Reset request sent. Please check your email','success')
-            return render_template('reset_request.html', title = 'Reset Request',form = form)
-
+            # return render_template('reset_request.html', title = 'Reset Request',form = form)
+            return redirect(url_for('home_page'))
         else:
             flash('user not there','failed')
 
@@ -202,6 +241,6 @@ def reset_token(token):
         user.password =  form.password1.data
         db.session.commit()
         flash('Password Changed! Please Login.')
-        return redirect(url_for('login_page'))
+        return redirect(url_for('home_page'))
     return render_template('change_password.html',form = form)
 

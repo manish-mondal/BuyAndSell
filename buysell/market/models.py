@@ -1,7 +1,7 @@
 from itsdangerous import Serializer 
 from market import db, login_manager
 from market import bcrypt
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin
 from flask import Flask
 
 app = Flask(__name__)
@@ -72,7 +72,13 @@ class Request(db.Model):
     item_id = db.Column(db.Integer(), db.ForeignKey('item.id'))
     item_name = db.Column(db.String(length=1024), nullable=False)
     buyer_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    seller_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     buyer_name = db.Column(db.String(length=1024), nullable=False)
     seller_id = db.Column(db.Integer(), db.ForeignKey('user.id'))                    
-    status= db.Column(db.Integer(),nullable=False)               
-
+    status= db.Column(db.Integer(),nullable=False) 
+    
+class Auth(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    customer_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    auth_code = db.Column(db.String())
+    
