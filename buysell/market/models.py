@@ -1,7 +1,7 @@
 from itsdangerous import Serializer 
 from market import db, login_manager
 from market import bcrypt
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin
 from flask import Flask
 
 app = Flask(__name__)

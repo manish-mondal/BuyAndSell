@@ -1,4 +1,3 @@
-
 from io import BytesIO
 from re import T
 from tkinter import N
@@ -9,7 +8,7 @@ from sqlalchemy import true
 from market import app,mail
 
 from flask import render_template, redirect, send_file, session, url_for, flash, request
-from market.models import Item, User,Request,Transaction,Auth
+from market.models import Item, User,Request,Auth
 from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm,ResetRequestForm,ChangePasswordForm,SellerItemForm,LoginAuthCodeForm,ForgetUserNameForm
 
 from market import db
@@ -99,25 +98,6 @@ def register_page():
 
     return render_template('register.html', form=form)
 
-
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    form = LoginForm()
-    if form.validate_on_submit():
-        attempted_user = User.query.filter_by(username=form.username.data).first()
-        if attempted_user and attempted_user.check_password_correction(
-                attempted_password=form.password.data
-        ):
-            login_user(attempted_user)
-            flash(f'Success! You are logged in as: {attempted_user.username}', category='success')
-            return redirect(url_for('market_page'))
-      
-        else:
-            flash('Username and password are not match! Please try again', category='danger')
-
-    return render_template('login.html', form=form)
-
-
 @app.route('/logout')
 def logout_page():
     logout_user()
@@ -148,7 +128,6 @@ def sell_page():
 
         owned_items = Item.query.filter(Item.id.not_in(ll),Item.owner==current_user.id)
         return render_template('sell.html', owned_items=owned_items, selling_form=selling_form)
-
 
 @app.route('/sell_items', methods=['GET', 'POST'])
 def sell_items():
@@ -265,162 +244,3 @@ def reset_token(token):
         return redirect(url_for('home_page'))
     return render_template('change_password.html',form = form)
 
-@app.route('/sell_items', methods=['GET', 'POST'])
-def sell_items():
-    form = SellerItemForm()
-    if form.validate_on_submit():
-        item_to_create =  Item(name=form.name.data,
-        price=form.price.data,description=form.description.data,owner= current_user.id)
-        db.session.add(item_to_create)
-        db.session.commit()
-
-        flash(f'Success! Your item is now in marketplace: {form.name.data}', category='success')
-        return redirect(url_for('sell_page'))
-    
-
-
-    return render_template('sell_items.html', form=form)
-
-def authgen(user,flag):
-    # secretkey = str(user.id+ 3232323232323232)
-    # print('3232323232323232')
-    # print(secretkey)
-    # print(user.id)
-    # count = 0
-    # newsecretkey =''
-    # for x in reversed(range(0,len(secretkey))):
-    #     newsecretkey+=secretkey[x]
-    #     count+=1
-    #     if(count==16):
-    #         break
-    if(flag == 0):
-        auth = Auth.query.filter_by(customer_id = current_user.id).first()
-        if(auth == None):
-            key = pyotp. random_base32()     
-            auth_to_create = Auth( customer_id=current_user.id,
-                                auth_code=key)
-            db.session.add(auth_to_create)
-            db.session.commit()
-        else:    
-            key = auth.auth_code    
-
-    elif(flag == 1):
-        auth = Auth.query.filter_by(customer_id = current_user.id).first()   
-        key = auth.auth_code
-    
-    print(key)        
-    t = pyotp.TOTP(key) #secret key
-    return t
-
-@app.route('/qr_generation')
-def qr_generation():
-# install pyotp and qurcode and Pillow library
-    user = User.query.filter_by(id = current_user.id).first()
-    t = authgen(user,1)
-    auth_str = t.provisioning_uri(name= 'Buy Anad Sell',issuer_name='Buy And Sell')
-
-    buffer = BytesIO()
-    img = qrcode.make(auth_str)
-    img.save(buffer)
-    buffer.seek(0)
-    response = send_file(buffer,mimetype='image/png')
-    return response
-
-@app.route('/qr_generationpage')
-def qr_generationpage():
-   return render_template('google_auth.html')
-
-@app.route('/qr_logincode',methods=['GET', 'POST'])
-def qr_logincode():
-# install pyotp and qurcode and Pillow library
-    authForm = LoginAuthCodeForm()
-    if authForm.validate_on_submit():
-        auth_code = request.form.get('auth_code')
-        attempted_user_id = json.loads(session["message"])
-        user = User.query.filter_by(id = attempted_user_id).first()
-        login_user(user)
-        t = authgen(user,1)
-        if auth_code == t.now():
-                login_user(user)
-                flash(f'Success! You are logged in as: {user.username}', category='success')
-                return redirect(url_for('market_page'))
-        else:
-                flash(f'Your Code mismatch! Please enter valid authentication code!', category='danger')
-
-
-    return render_template('login_authcode.html', form=authForm)
-        
-@app.route('/qr_registrationcode',methods=['GET', 'POST'])
-def qr_registrationcode():
-# install pyotp and qurcode and Pillow library
-    authForm = LoginAuthCodeForm()
-    print("hello1")
-    # if authForm.validate_on_submit():
-    print("hello")
-    auth_code = request.form.get('auth_code')
-    attempted_user_id = json.loads(session['userid'])
-    user = User.query.filter_by(id = attempted_user_id).first()
-    t = authgen(user,0)
-    print("hello")
-    print(t.now())
-    if auth_code == t.now():
-    
-        flash(f"Account created successfully! You are now logged in as {user.username}", category='success')
-        return redirect(url_for('market_page'))
-    else:
-        flash(f'Your Code mismatch! Please enter valid authentication code!', category='danger')
-
-
-    return render_template('google_auth_register.html', form=authForm)
-
-@app.route('/qr_generation_registration')
-def qr_generation_registration():
-# install pyotp and qurcode and Pillow library
-    user = User.query.filter_by(id = current_user.id).first()
-    t = authgen(user,0)
-    auth_str = t.provisioning_uri(name= 'Buy Anad Sell',issuer_name='Buy And Sell')
-
-    buffer = BytesIO()
-    img = qrcode.make(auth_str)
-    img.save(buffer)
-    buffer.seek(0)
-    response = send_file(buffer,mimetype='image/png')
-    return response
-    
-# Email on the basis of the request to puchase item
-def send_email_forget_username(user):
-    
-    msg = Message(f'User name reset request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
-    msg.body =f'''Hi,
-    
-    You have got an user name rest request.
-    
-    Your User Name is : {user.username}
-
-
-    From,
-    Buy And Sell
-
-
-    '''
-
-    mail.send(msg)
-
-
-@app.route('/reset_username',methods=['GET', 'POST'])
-def reset_username():
-    form = ForgetUserNameForm()
-    if form.validate_on_submit():
-        
-        user = User.query.filter_by(email_address=form.email_address.data).first()
-        print(user.email_address)
-        if user:
-            # print(user)
-            send_email_forget_username(user)
-            flash('Reset request sent. Please check your email','success')
-            return redirect(url_for('home_page'))
-
-        else:
-            flash('user not there','failed')
-
-    return render_template('forget_username.html',title='Reset Request',form= form)
