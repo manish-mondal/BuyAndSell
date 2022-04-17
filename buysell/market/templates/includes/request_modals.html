@@ -52,14 +52,14 @@
         <form method="POST">
           {{ request_form.hidden_tag() }}
           <h4 class="text-center">
-            Are you sure you want to approve {{ req.item_id }} for {{ req.buyer_id }}$ ?
+            Are you sure you want to approve item id {{ req.item_id }} for buyer {{ req.buyer_id }} ?
           </h4>
           <br>
           <h6 class="text-center">
-            By clicking Purchase, you will purchase this item.
+            By clicking OK, you will sell this item.
           </h6>
           <br>
-          <input id="purchased_item" name="purchased_item" type="hidden" value="{{req.id}}">
+          <input id="req_id" name="req_id" type="hidden" value="{{req.id}}">
           {{ request_form.submit(class="btn btn-outline-success btn-block") }}
         </form>
       </div>

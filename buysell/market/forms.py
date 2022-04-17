@@ -39,6 +39,7 @@ class SellerItemForm(FlaskForm):
     name = StringField(label='Item Name:', validators=[Length(min=2, max=30), DataRequired()])
     price = StringField(label='Item Price:', validators=[Length(min=2, max=30), DataRequired()])
     description = StringField(label='Item Description:', validators=[Length(min=2, max=150), DataRequired()])
+    pickup_address = StringField(label='Pick Up Address:', validators=[Length(min=2, max=150), DataRequired()])
     submit = SubmitField(label='Sell Item!')
 
 class RequestForm(FlaskForm):
