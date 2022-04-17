@@ -13,11 +13,11 @@ Market Page
          <thead>
             <tr>
                <!-- Your Columns HERE -->
-               <th scope="col">ID</th>
-               <th scope="col">Name</th>
-               <th scope="col">Barcode</th>
-               <th scope="col">Price</th>
-               <th scope="col">Options</th>
+               <th scope="col">ITEM ID</th>
+               <th scope="col">ITEM Name</th>   
+               <th scope="col">PRICE</th>
+               <th scope="col">PICK UP ADDRESS</th>
+               <th scope="col">OPTIONS</th>
             </tr>
          </thead>
          <tbody>
@@ -26,9 +26,9 @@ Market Page
             {% include 'includes/items_modals.html' %}
             <tr>
                <td>{{ item.id }}</td>
-               <td>{{ item.name }}</td>
-               <td>{{ item.barcode }}</td>
+               <td>{{ item.name }}</td>               
                <td>{{ item.price }}$</td>
+               <td>{{ item.pickup_address }}</td>
                <td>
                   <button class="btn btn-outline btn-info" data-toggle="modal" data-target="#Modal-MoreInfo-{{ item.id }}">More Info</button>
                   <button class="btn btn-outline btn-success" data-toggle="modal" data-target="#Modal-PurchaseConfirm-{{ item.id }}">Purchase this Item</button>

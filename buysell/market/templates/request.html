@@ -13,10 +13,12 @@ Requests Page
          <thead>
             <tr>
                <!-- Your Columns HERE -->
-               <th scope="col">Req ID</th>
-               <th scope="col">Item ID</th>
-               <th scope="col">Buyer ID</th>
-               <th scope="col">Approve</th>
+               <th scope="col">REQ ID</th>
+               <th scope="col">ITEM ID</th>
+               <th scope="col">ITEM NAME</th>
+               <th scope="col">BUYER ID</th>
+               <th scope="col">BUYER NAME</th>
+               <th scope="col">APPROVE</th>
             </tr>
          </thead>
          <tbody>
@@ -24,9 +26,12 @@ Requests Page
             {% for req in requests %}
             {% include 'includes/request_modals.html' %}
             <tr>
-               <td>{{ req.id }}</td>
+               <td>{{ req.id }}</td>   
                <td>{{ req.item_id }}</td>
+               <td>{{ req.item_name }}</td>
                <td>{{ req.buyer_id }}</td>
+               <td>{{ req.buyer_name}}</td>
+               <td>{{ req.id }}</td>
                <td>
                   
                   <button class="btn btn-outline btn-success" data-toggle="modal" data-target="#Modal-PurchaseConfirm-{{ req.id }}">Approve this request</button>

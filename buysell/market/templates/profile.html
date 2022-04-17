@@ -13,18 +13,24 @@ Profile Page
          <thead>
             <tr>
                <!-- Your Columns HERE -->
-               <th scope="col">TRANSACTION_ID</th>
+               <th scope="col">REQUEST ID</th>
                <th scope="col">ITEM ID</th>
+               <th scope="col">ITEM NAME</th>
+               <th scope="col">PRICE</th>
+               <th scope="col">DESCRIPTION</th>
                <th scope="col">SELLER ID</th>
             </tr>
          </thead>
          <tbody>
             <!-- Your rows inside the table HERE: -->
-            {% for item in bought_items %}
+            {% for req,item in bought_items %}
             <tr>
+               <td>{{ req.id }}</td>
                <td>{{ item.id }}</td>
-               <td>{{ item.item_id }}</td>
-               <td>{{ item.seller_id }}</td>
+               <td>{{ item.name }}</td>
+               <td>{{ item.price }}$</td>
+               <td>{{ item.description }}</td>
+               <td>{{ item.owner }}</td>
                
             </tr>
             {% endfor %}
@@ -38,18 +44,24 @@ Profile Page
          <thead>
             <tr>
                <!-- Your Columns HERE -->
-               <th scope="col">TRANSACTION_ID</th>
+               <th scope="col">REQUEST ID</th>
                <th scope="col">ITEM ID</th>
+               <th scope="col">ITEM NAME</th>
+               <th scope="col">PRICE</th>
+               <th scope="col">DESCRIPTION</th>
                <th scope="col">BUYER ID</th>
             </tr>
          </thead>
          <tbody>
             <!-- Your rows inside the table HERE: -->
-            {% for item in sold_items %}
+            {% for req,item in sold_items %}
             <tr>
+               <td>{{ req.id }}</td>
                <td>{{ item.id }}</td>
-               <td>{{ item.item_id }}</td>
-               <td>{{ item.buyer_id }}</td>
+               <td>{{ item.name }}</td>
+               <td>{{ item.price }}$ </td>
+               <td>{{ item.description }}</td>
+               <td>{{ req.buyer_id }}</td>
             </tr>
             {% endfor %}
          </tbody>

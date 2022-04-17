@@ -24,7 +24,6 @@ def home_page():
     form = LoginForm()
     if form.validate_on_submit():
         attempted_user = User.query.filter_by(username=form.username.data).first()
-        print(attempted_user,form.password.data,'DD')
         if attempted_user and attempted_user.check_password_correction(
                 attempted_password=form.password.data
         ):
@@ -36,9 +35,7 @@ def home_page():
             return redirect(url_for('qr_logincode'))
         else:
             flash('Username and password are not match! Please try again', category='danger')
-
-    # return render_template('login.html', form=form)
-
+    
     return render_template('home.html',form=form)
 
 @app.route('/buy', methods=['GET', 'POST'])
@@ -48,26 +45,36 @@ def market_page():
     if request.method == "POST":
         #Purchase Item Logic
         purchased_item = request.form.get('purchased_item')
-        p_item_object = Item.query.filter_by(name=purchased_item).first()
-        if p_item_object:
-            # if current_user.can_purchase(p_item_object):
-               ##### # p_item_object.buy(current_user)
-
-                #  add code for email sender on the basis of the request
-                user_Details = User.query.filter_by(id=p_item_object.owner).first()
-                send_email_buy_request(user_Details,current_user,p_item_object)
-                 #  add code for email sender on the basis of the request
-                
-                flash(f"Congratulations! You purchased {p_item_object.name} for {p_item_object.price}$", category='success')
-            # else:
-            #     flash(f"Unfortunately, you don't have enough money to purchase {p_item_object.name}!", category='danger')
         
+        p_item_object = Item.query.filter_by(id=purchased_item).first()
+
+        existing_req = Request.query.filter(Request.item_id==purchased_item,Request.buyer_id==current_user.id).first()
+
+        if not existing_req:
+            item_name = Item.query.filter(Item.id==purchased_item).first().name
+            req_to_create = Request(item_id=purchased_item,item_name=item_name,buyer_id=current_user.id,\
+                                    buyer_name=current_user.username,seller_id=p_item_object.owner,status=0)
+            db.session.add(req_to_create)
+            db.session.commit()
+            user_Details = User.query.filter_by(id=p_item_object.owner).first()
+            send_email_buy_request(user_Details,current_user,p_item_object)
+            flash(f"You purchase request of {p_item_object.name} for {p_item_object.price}$ is sent\
+                is sent to the Seller. You will see the item in your Profile once approved." , category='success')
+        else:
+            flash(f"Request for {p_item_object.name} already exists.\
+                You will see the item in your Profile once approved." , category='success')
+
         return redirect(url_for('market_page'))
 
     if request.method == "GET":
-        items = Item.query.filter(Item.owner!=current_user.id)
-        # items = Item.query.all()
-        # owned_items = Item.query.filter_by(owner=current_user.id)
+        # sold_items = Request.query.filter(Request.status==1).all()
+        sold_items= db.session.query(Request.item_id).filter(Request.status==1).all()
+        ll=[]
+        for i in sold_items:
+             ll.append(i[0])
+
+        items = Item.query.filter(Item.id.not_in(ll),Item.owner!=current_user.id)    
+        
         return render_template('market.html', items=items, purchase_form=purchase_form)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -91,23 +98,6 @@ def register_page():
 
     return render_template('register.html', form=form)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    form = LoginForm()
-    if form.validate_on_submit():
-        attempted_user = User.query.filter_by(username=form.username.data).first()
-        if attempted_user and attempted_user.check_password_correction(
-                attempted_password=form.password.data
-        ):
-            login_user(attempted_user)
-            flash(f'Success! You are logged in as: {attempted_user.username}', category='success')
-            return redirect(url_for('market_page'))
-      
-        else:
-            flash('Username and password are not match! Please try again', category='danger')
-
-    return render_template('login.html', form=form)
-
 @app.route('/logout')
 def logout_page():
     logout_user()
@@ -116,39 +106,46 @@ def logout_page():
 
 @app.route('/profile',methods=['GET', 'POST'])
 def profile_page():
-    # if request.method == "GET":
+    
+    bought_items = db.session.query(Request,Item).filter(Request.item_id==Item.id,Request.status==1,\
+                    Request.buyer_id==current_user.id)
+    
+    sold_items = db.session.query(Request,Item).filter(Request.item_id==Item.id,Request.status==1,\
+                    Request.seller_id==current_user.id)
 
-    bought_items = Transaction.query.filter(Transaction.buyer_id==current_user.id)
-    sold_items = Transaction.query.filter(Transaction.seller_id==current_user.id)
-    # items = Item.query.all()
-    # owned_items = Item.query.filter_by(owner=current_user.id)
+                    
     return render_template('profile.html', bought_items=bought_items,sold_items=sold_items)
 
 
 @app.route('/sell',methods=['GET', 'POST'])
 def sell_page():
-    
     selling_form = SellItemForm()
-    
-    if request.method == "POST":
-        #Sell Item Logic
-        sold_item = request.form.get('sold_item')
-        s_item_object = Item.query.filter_by(name=sold_item).first()
-        if s_item_object:
-            if current_user.can_sell(s_item_object):
-                s_item_object.sell(current_user)
-                flash(f"Congratulations! You sold {s_item_object.name} back to market!", category='success')
-            else:
-                flash(f"Something went wrong with selling {s_item_object.name}", category='danger')
-
-
-        return redirect(url_for('sell_page'))
-
     if request.method == "GET":
-        # items = Item.query.filter_by(owner=None)
-        # items = Item.query.all()
-        owned_items = Item.query.filter_by(owner=current_user.id)
+        sold_items= db.session.query(Request.item_id).filter(Request.status==1).all()
+        ll=[]
+        for i in sold_items:
+             ll.append(i[0])
+
+        owned_items = Item.query.filter(Item.id.not_in(ll),Item.owner==current_user.id)
         return render_template('sell.html', owned_items=owned_items, selling_form=selling_form)
+
+
+@app.route('/sell_items', methods=['GET', 'POST'])
+def sell_items():
+    form = SellerItemForm()
+    if form.validate_on_submit():
+        item_to_create =  Item(name=form.name.data,price=form.price.data,
+                        description=form.description.data,pickup_address=form.pickup_address.data,owner= current_user.id)
+        db.session.add(item_to_create)
+        db.session.commit()
+
+        flash(f'Success! Your item is now in marketplace: {form.name.data}', category='success')
+        return redirect(url_for('sell_page'))
+    
+
+
+    return render_template('sell_items.html', form=form)
+
 
 
 @app.route('/requests',methods=['GET', 'POST'])
@@ -156,19 +153,21 @@ def requests_page():
     request_form = RequestForm()
     if request.method == "POST":
         #Purchase Item Logic
-        purchased_item = request.form.get('purchased_item')
-        p_item_object = Item.query.filter_by(name=purchased_item).first()
-        if p_item_object:
-            if current_user.can_purchase(p_item_object):
-                p_item_object.buy(current_user)
-                flash(f"Congratulations! You purchased {p_item_object.name} for {p_item_object.price}$", category='success')
-            else:
-                flash(f"Unfortunately, you don't have enough money to purchase {p_item_object.name}!", category='danger')
-        
-        return redirect(url_for('market_page'))
+        request_id = request.form.get('req_id')
+        req_object = Request.query.filter(Request.id==request_id).first()
+        if req_object:
+            Request.query.filter(Request.item_id==req_object.item_id).\
+            update({'status': 2})
+            Request.query.filter(Request.id==request_id).\
+            update({'status': 1})    
+            db.session.commit()
+
+            flash(f"You Approved {req_object.item_id} for {req_object.buyer_id}", category='success')
+            
+        return redirect(url_for('requests_page'))
 
     if request.method == "GET":
-        requests = Request.query.filter(Request.seller_id ==current_user.id,Request.status =="0")
+        requests = Request.query.filter(Request.seller_id ==current_user.id,Request.status ==0)
         # items = Item.query.all()
         # owned_items = Item.query.filter_by(owner=current_user.id)
         return render_template('request.html', requests=requests, request_form=request_form)
@@ -178,7 +177,7 @@ def send_email(user):
     token = User.get_token(user)
     msg = Message('Password Reset Request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
     msg.body =f'''
-    To Reset Password folllow the link.
+    To Reset Password follow the link.
     
      {url_for('reset_token',token=token,_external=True)}
    
