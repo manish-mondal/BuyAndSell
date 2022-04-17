@@ -87,4 +87,8 @@ class Transaction(db.Model):
     seller_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     
     
-
+class Auth(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    customer_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    auth_code = db.Column(db.String())
+    

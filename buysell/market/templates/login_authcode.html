@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}
+    Register Page
+{% endblock %}
+
+{% block content %}
+<body class="text-center">
+    <div class="container">
+        <form method="POST" class="form-signin" style="color:white">
+            {{ form.hidden_tag() }}
+            <img class="mb-4" src="https://financialservicecompanyimages.s3.amazonaws.com/Untitled.png" alt="">
+            <h1 class="h3 mb-3 font-weight-normal">
+                Please Enter Authentication Code
+            </h1>
+            <br>
+            {{ form.auth_code.label() }}
+            {{ form.auth_code(class="form-control", placeholder="Code") }}
+
+            <br>
+
+            </div>
+
+            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+
+        </form>
+    </div>
+</body>
+{% endblock %}
