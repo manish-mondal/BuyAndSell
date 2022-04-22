@@ -8,7 +8,7 @@ from urllib import response
 from sqlalchemy import true
 from market import app,mail
 from flask import render_template, redirect, send_file, session, url_for, flash, request
-from market.models import Item, User,Request,Transaction,Auth
+from market.models import Item, User,Request,Auth
 from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm,RequestForm,ResetRequestForm,ChangePasswordForm,SellerItemForm,LoginAuthCodeForm,ForgetUserNameForm
 from market import db
 from flask_login import login_user, logout_user, login_required, current_user
@@ -133,6 +133,7 @@ def sell_page():
 @app.route('/sell_items', methods=['GET', 'POST'])
 def sell_items():
     form = SellerItemForm()
+    # try:    
     if form.validate_on_submit():
         item_to_create =  Item(name=form.name.data,price=form.price.data,
                         description=form.description.data,pickup_address=form.pickup_address.data,owner= current_user.id)
@@ -141,7 +142,10 @@ def sell_items():
 
         flash(f'Success! Your item is now in marketplace: {form.name.data}', category='success')
         return redirect(url_for('sell_page'))
-    
+# except:
+    #     # if form.errors != {}: #If there are not errors from the validations
+    #     # for err_msg in form.errors.values():
+    #        flash(f'Please fill Item with correct values', category='danger')
 
 
     return render_template('sell_items.html', form=form)
@@ -245,21 +249,6 @@ def reset_token(token):
         return redirect(url_for('home_page'))
     return render_template('change_password.html',form = form)
 
-@app.route('/sell_items', methods=['GET', 'POST'])
-def sell_items():
-    form = SellerItemForm()
-    if form.validate_on_submit():
-        item_to_create =  Item(name=form.name.data,
-        price=form.price.data,description=form.description.data,owner= current_user.id)
-        db.session.add(item_to_create)
-        db.session.commit()
-
-        flash(f'Success! Your item is now in marketplace: {form.name.data}', category='success')
-        return redirect(url_for('sell_page'))
-    
-
-
-    return render_template('sell_items.html', form=form)
 
 def authgen(user,flag):
     # secretkey = str(user.id+ 3232323232323232)
@@ -370,12 +359,12 @@ def qr_generation_registration():
 # Email on the basis of the request to puchase item
 def send_email_forget_username(user):
     
-    msg = Message(f'User name reset request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
+    msg = Message(f'Username reset request', recipients=[user.email_address],sender='streetanderson683@gmail.com')
     msg.body =f'''Hi,
     
-    You have got an user name rest request.
+    You have got an user-name reset request.
     
-    Your User Name is : {user.username}
+    Your Username is : {user.username}
 
 
     From,

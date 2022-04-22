@@ -47,7 +47,7 @@ class User(db.Model, UserMixin):
 
 class Item(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(length=30), nullable=False, unique=True)
+    name = db.Column(db.String(length=30), nullable=False)
     description = db.Column(db.String(length=1024), nullable=False)
     price = db.Column(db.Integer(), nullable=False)
     pickup_address = db.Column(db.String(length=1024), nullable=False)
